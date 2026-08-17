@@ -58,6 +58,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   {tab.label}
                 </Link>
               ))}
+              <a
+                href="https://analytics.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm px-4 py-2 rounded-lg text-white/70 hover:text-[#C9A84C] hover:bg-white/5 transition-colors font-medium flex items-center gap-1.5"
+              >
+                Analytics ↗
+              </a>
             </div>
           </div>
 
