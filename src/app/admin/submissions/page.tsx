@@ -30,13 +30,31 @@ const FIELD_LABELS: Record<string, string> = {
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  const fetchSubmissions = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/submissions');
+      if (res.status === 401) {
+        window.location.href = '/admin/login';
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `Server error (${res.status})`);
+      setSubmissions(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      console.error('Error fetching submissions:', err);
+      setError(err.message || 'Failed to load submissions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch('/api/admin/submissions')
-      .then(r => r.json())
-      .then(data => { setSubmissions(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
+    fetchSubmissions();
   }, []);
 
   const printSubmission = (s: Submission) => {
@@ -81,9 +99,40 @@ export default function SubmissionsPage() {
 
   return (
     <div>
+      {/* Error notification */}
+      {error && (
+        <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={fetchSubmissions}
+            className="text-xs bg-red-500/20 hover:bg-red-500/30 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-white font-semibold text-lg">Intake Submissions</h1>
-        <span className="text-[#5C564F] text-xs">{submissions.length} total</span>
+        <h1 className="text-white font-semibold text-lg flex items-center gap-2">
+          Intake Submissions
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Connected to database" />
+        </h1>
+        <div className="flex items-center gap-3">
+          <span className="text-[#5C564F] text-xs">{submissions.length} total</span>
+          <button
+            onClick={fetchSubmissions}
+            disabled={loading}
+            className="text-[#C9A84C] hover:text-white bg-[#BD5319]/10 border border-[#BD5319]/30 hover:border-[#BD5319] text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <svg className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
       {loading ? (
