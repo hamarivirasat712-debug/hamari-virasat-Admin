@@ -47,24 +47,52 @@ export default function EnquiriesPage() {
     <div>
       {/* Error notification */}
       {error && (
-        <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span>⚠️</span>
-            <span>{error}</span>
+        <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <span className="text-base mt-0.5">⚠️</span>
+            <div>
+              <p className="font-medium text-white">{error}</p>
+              {error.toLowerCase().includes('supabase') && (
+                <p className="text-xs text-red-300/80 mt-1">
+                  Supabase free-tier projects pause after 7 days of inactivity. Go to your Supabase project dashboard to unpause or restore it.
+                </p>
+              )}
+            </div>
           </div>
-          <button
-            onClick={fetchEnquiries}
-            className="text-xs bg-red-500/20 hover:bg-red-500/30 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
-          >
-            Retry
-          </button>
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+            {error.toLowerCase().includes('supabase') && (
+              <a
+                href="https://supabase.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs bg-[#5E2E14]/60 hover:bg-[#5E2E14] text-[#C9A84C] border border-[#5E2E14] px-3 py-1.5 rounded-lg transition-colors font-medium flex items-center gap-1"
+              >
+                Supabase Dashboard ↗
+              </a>
+            )}
+            <button
+              onClick={fetchEnquiries}
+              className="text-xs bg-red-500/20 hover:bg-red-500/30 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
+            >
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-white font-semibold text-lg flex items-center gap-2">
           Enquiries
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Connected to database" />
+          <span
+            className={`w-2 h-2 rounded-full ${
+              error
+                ? 'bg-red-500'
+                : loading
+                ? 'bg-yellow-500 animate-pulse'
+                : 'bg-emerald-500 animate-pulse'
+            }`}
+            title={error ? 'Database connection error' : loading ? 'Connecting...' : 'Connected to database'}
+          />
         </h1>
         <div className="flex items-center gap-3">
           <span className="text-[#5C564F] text-xs">{enquiries.length} total</span>
